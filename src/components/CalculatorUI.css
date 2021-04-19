@@ -1,0 +1,44 @@
+body {
+    background-color: rgb(85,125,205);
+}
+.calc {
+    display: grid;
+    grid-template: repeat(6, 100px) / repeat(4, 100px);
+    grid-template-areas: "sc sc sc sc"
+                         "ac oi op od"
+                         "n7 n8 n9 om"
+                         "n4 n5 n6 os"
+                         "n1 n2 n3 oa"
+                         "n0 n0 dc oe";
+    border: 2px solid black;
+}
+#calc-scr {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    font-size: 5em;
+    border: 2px solid black;
+}
+.calc-btn {
+    font-size: 3em;
+}
+#calc-scr { grid-area: sc }
+#calc-clr { grid-area: ac }
+#calc-inv { grid-area: oi }
+#calc-prc { grid-area: op }
+#calc-div { grid-area: od }
+#calc-mul { grid-area: om }
+#calc-sub { grid-area: os }
+#calc-add { grid-area: oa }
+#calc-equ { grid-area: oe }
+#calc-dec { grid-area: dc }
+#calc-n1  { grid-area: n1 }
+#calc-n2  { grid-area: n2 }
+#calc-n3  { grid-area: n3 }
+#calc-n4  { grid-area: n4 }
+#calc-n5  { grid-area: n5 }
+#calc-n6  { grid-area: n6 }
+#calc-n7  { grid-area: n7 }
+#calc-n8  { grid-area: n8 }
+#calc-n9  { grid-area: n9 }
+#calc-n0  { grid-area: n0 }
