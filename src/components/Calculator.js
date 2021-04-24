@@ -7,6 +7,8 @@
     5 equal sign (=) has registed, a result is shown on screen  [press number]
     6 equal sign (=) has registed, first digit of new number has shown on screen  [press operator]
     7 a new operator has registered, number on screen has registered as new number currentNum, waiting for new number input
+    8 second operator(higher precedence) has registered from stage 4 without "=", waiting for new number input
+    9 first digit of third number (display) has registered and shown on screen
 */
 
 import React, { Component } from 'react'
@@ -45,6 +47,8 @@ export default class Calculator extends Component {
         //5 equal sign (=) has registed, a result is shown on screen  [press number]
         //6 equal sign (=) has registed, first digit of new number has shown on screen  [press operator]
         //7 a new operator has registered, number on screen has registered as new number currentNum, waiting for new number input
+        //8 second operator(higher precedence) has registered from stage 4 without "=", waiting for new number input
+        //9 first digit of third number (display) has registered and shown on screen
         const setNum = (numString, newKey) => numString === "0" ? newKey : numString + newKey
         let { userKey, currentNum, display, stage } = this.state
         switch (stage) {
@@ -70,10 +74,27 @@ export default class Calculator extends Component {
             case 7:
                 this.setState({ currentNum: userKey, storedNum: display, display: userKey, stage: 4 })
                 return
+            case 8:
+                this.setState({ display: userKey, stage: 9 })
+                return
+            case 9:
+                display = setNum(display, userKey)
+                this.setState({ display })
+                return
             default:
                 return
         }
     }
+    //STAGE CODES:
+    //1 fresh start/reset  [press number]
+    //2 first digit of first number has registered, currentNum is set  [press operator]
+    //3 an operator has registered, waiting for new number input  [press number]
+    //4 first digit of second number has registered, storedNum is set, currentNum new value is set  [=]
+    //5 equal sign (=) has registed, a result is shown on screen  [press number]
+    //6 equal sign (=) has registed, first digit of new number has shown on screen  [press operator]
+    //7 a new operator has registered, number on screen has registered as new number currentNum, waiting for new number input
+    //8 second operator(higher precedence) has registered from stage 4 without "=", waiting for new number input
+    //9 first digit of third number (display) has registered and shown on screen
     pressKeyOperator = () => {
         const proceedCalculation = (oldOpr, newOpr) => {
             const operators = "*/"
@@ -84,7 +105,7 @@ export default class Calculator extends Component {
             }
             return false
         }
-        const { userKey, currentOpr, display, stage } = this.state
+        const { userKey, currentOpr, storedOpr, display, stage } = this.state
         switch (stage) {
             case 1:
                 this.setState({ currentNum: display, currentOpr: userKey, stage: 3 })
@@ -107,10 +128,30 @@ export default class Calculator extends Component {
             case 7:
                 this.setState({ currentOpr: userKey, stage: 7 })
                 return
+            case 8:
+                if(proceedCalculation(storedOpr, userKey)){
+                    this.pressKeyEqual()
+                    return
+                }
+                this.setState({ currentOpr: userKey })
+                return
+            case 9:
+                this.pressKeyEqual()
+                return
             default:
                 return
         }
     }
+    //STAGE CODES:
+    //1 fresh start/reset  [press number]
+    //2 first digit of first number has registered, currentNum is set (or "half-set")  [press operator]
+    //3 an operator has registered, waiting for new number input  [press number]
+    //4 first digit of second number has registered, storedNum is set, currentNum new value is set  [=]
+    //5 equal sign (=) has registed, a result is shown on screen  [press number]
+    //6 equal sign (=) has registed, first digit of new number has shown on screen  [press operator]
+    //7 a new operator has registered, number on screen has registered as new number currentNum, waiting for new number input
+    //8 second operator(higher precedence) has registered from stage 4 without "=", waiting for new number input
+    //9 first digit of third number (display) has registered and shown on screen
     pressKeyEqual = () => {
         const getOperationResult = (firstNum, secondNum, operator) => {
             if(firstNum === "ERROR" || secondNum === "ERROR"){
@@ -124,7 +165,7 @@ export default class Calculator extends Component {
                 default : return
             }
         }
-        const { userKey, currentNum, storedNum, currentOpr, display, stage } = this.state
+        const { userKey, currentNum, storedNum, currentOpr, storedOpr, display, stage } = this.state
         let result = null
         switch (stage) {
             case 1:
@@ -158,6 +199,29 @@ export default class Calculator extends Component {
                     })
                 }
                 setStateFromResult(currentOprOperation())
+                return
+            case 8:
+                if(userKey !== "="){
+                    result = getOperationResult(storedNum, currentNum, userKey)
+                    this.setState({ currentNum: result, currentOpr: userKey, display: result, stage: 3 })
+                    return
+                }
+                result = getOperationResult(currentNum, display, currentOpr)
+                result = getOperationResult(storedNum, result, storedOpr)
+                this.setState({ currentNum: display, display: result, stage: 5 })
+                return
+            case 9:
+                result = getOperationResult(currentNum, display, currentOpr)
+                if(("*/").includes(userKey)){
+                    this.setState({ currentNum: result, currentOpr: userKey, display: result, stage: 8 })
+                    return
+                }
+                result = getOperationResult(storedNum, result, storedOpr)
+                if(userKey !== "="){
+                    this.setState({ currentNum: result, currentOpr: userKey, display: result, stage: 3 })
+                    return
+                }
+                this.setState({ currentNum: display, display: result, stage: 5 })
                 return
             default:
                 return
