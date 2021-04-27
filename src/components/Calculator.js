@@ -12,19 +12,19 @@
         [ 1 + 2 = ]
      6  equal sign (=) is used, first digit of new number has shown on screen
         [ 1 + 2 = 4 ]
-     7  new operator has registered, recentNum is set, waiting for new number input
+     7  new operator has registered, waiting for new number input
         [ 1 + 2 = 4 + ]
      8  second operator(higher precedence) has registered from stage 4 without "=",
-        first number storedNum is on hold, waiting for new number input
+        waiting for new number input
         [ 1 + 2 * ]
      9  first digit of third number (display) has registered and shown on screen,
-        storedNum is still on hold
+        first number storedNum is on hold
         [ 1 + 2 * 4 ]
     10  new second operator(higher precedence) has registered from stage 9 without "=",
-        storedNum is still on hold, result is stored and waiting for new number input
-        [ 1 + 2 * 4 / ]
+        storedNum is still on hold, result is stored and shown, waiting for new number input
+        [ 1 + 2 * 4 / ] => [ 1 + 8 / ]
     11  first digit of new third number (display) has registered and shown on screen
-        [ 1 + 2 * 4 / 5 ]
+        [ 1 + 2 * 4 / 5 ] => [ 1 + 8 / 5 ]
 */
 
 import React, { Component } from 'react'
@@ -149,7 +149,7 @@ export default class Calculator extends Component {
         }
     }
     pressKeyEqual = () => {
-        const getDecimalDigits = (numStr) => {
+        const getDecimalDigitLength = (numStr) => {
             if (numStr.includes("e+")) return 0
             if (numStr.includes("e-")) {
                 const expLength = Math.abs(numStr.split("e")[1])
@@ -166,26 +166,27 @@ export default class Calculator extends Component {
         }
         const calculateResult = (numOne, numTwo, operator) => {
             if (numOne === "ERROR" || numTwo === "ERROR") return "ERROR"
-            const decDigitsOne = getDecimalDigits(numOne)
-            const decDigitsTwo = getDecimalDigits(numTwo)
+            const lengthOne = getDecimalDigitLength(numOne)
+            const lengthTwo = getDecimalDigitLength(numTwo)
+            const longerLength = Math.max(lengthOne, lengthTwo)
             switch (operator) {
-                case "+": return Number((Number(numOne) + Number(numTwo)).toFixed(Math.max(decDigitsOne, decDigitsTwo))).toString()
-                case "-": return Number((Number(numOne) - Number(numTwo)).toFixed(Math.max(decDigitsOne, decDigitsTwo))).toString()
-                case "*": return Number((Number(numOne) * Number(numTwo)).toFixed(decDigitsOne + decDigitsTwo)).toString()
+                case "+": return Number((Number(numOne) + Number(numTwo)).toFixed(longerLength)).toString()
+                case "-": return Number((Number(numOne) - Number(numTwo)).toFixed(longerLength)).toString()
+                case "*": return Number((Number(numOne) * Number(numTwo)).toFixed(lengthOne + lengthTwo)).toString()
                 case "/":
                     if (!Number(numTwo)) return "ERROR"
                     const result = (Number(numOne) / Number(numTwo)).toString()
-                    if (result.includes(".")) {
-                        let numPart = result.includes("e") ? result.split("e")[0] : result
-                        const decPartLength = numPart.split(".")[1].length
-                        if (decPartLength > 9) {
-                            if (numPart.charAt(numPart.length - 2) === "0" && numPart.charAt(numPart.length - 3) === "0") {
-                                numPart = Number(numPart.slice(0, numPart.length - 2)).toString()
-                            } else if (numPart.charAt(numPart.length - 2) === "9" && numPart.charAt(numPart.length - 3) === "9") {
-                                numPart = calculateResult(numPart.slice(0, numPart.length - 2), (0).toFixed(decPartLength - 3) + 1, "+")
-                            }
-                            return numPart + (result.includes("e") ? result.slice(result.search("e")) : "")
-                        }
+                    let numStr = result.includes("e") ? result.split("e")[0] : result
+                    const decimalLength = numStr.includes(".") ? numStr.split(".")[1].length : 0
+                    if (decimalLength > 9) {
+                        const lastSecondDigit = numStr.charAt(numStr.length - 2)
+                        const lastThirdDigit = numStr.charAt(numStr.length - 3)
+                        const lastTwoDigitsRemoved = numStr.slice(0, numStr.length - 2)
+                        const addingExtra = numStr[0] === "-" ? "-" + (0).toFixed(decimalLength - 3) + 1 : (0).toFixed(decimalLength - 3) + 1
+                        numStr = lastSecondDigit === "0" && lastThirdDigit === "0" ? Number(lastTwoDigitsRemoved).toString()
+                               : lastSecondDigit === "9" && lastThirdDigit === "9" ? calculateResult(lastTwoDigitsRemoved, addingExtra, "+")
+                                                                                   : numStr
+                        return numStr + (result.includes("e") ? result.slice(result.search("e")) : "")
                     }
                     return result
                 default : return
@@ -213,9 +214,6 @@ export default class Calculator extends Component {
             case 4:
             case 8:
             case 10:
-                console.log("recentNum", recentNum) // don't forget to remove when finish --------------==============
-                console.log("display", display)
-                console.log("currentOpr", currentOpr)
                 result = stage === 4 ? calculateResult(recentNum, display, currentOpr)
                        : stage === 8 ? calculateResult(recentNum, display, storedOpr)
                                      : calculateResult(storedNum, display, storedOpr)
@@ -348,7 +346,6 @@ export default class Calculator extends Component {
     }
     sendUserKey = () => {
         const { userKey } = this.state
-        console.log(userKey)    // don't forget to remove when finish --------------==============
         const others = "ci=.%"
         if (others.includes(userKey)) {
             switch (userKey) {
