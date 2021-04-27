@@ -3,7 +3,7 @@ body {
 }
 .calc {
     display: grid;
-    grid-template: repeat(6, 100px) / repeat(4, 100px);
+    grid-template: repeat(6, 120px) / repeat(4, 120px);
     grid-template-areas: "sc sc sc sc"
                          "ac oi op od"
                          "n7 n8 n9 om"
@@ -16,7 +16,7 @@ body {
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    font-size: 5em;
+    font-size: 2em;
     border: 2px solid black;
 }
 .calc-btn {

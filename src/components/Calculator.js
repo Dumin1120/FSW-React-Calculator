@@ -1,16 +1,30 @@
 /*
     STAGE CODES:
-     1  fresh start/reset  [press number]
-     2  first digit of first number has registered to display  [press operator]
-     3  an operator has registered, waiting for new number input  [press number]
-     4  first digit of second number has registered, recentNum is set  [equal]
-     5  equal sign (=) is used, a result is shown on screen  [press number]
-     6  equal sign (=) is used, first digit of new number has shown on screen  [press operator]
+     1  fresh start/reset
+        []
+     2  first digit of first number has registered to display
+        [ 1 ]
+     3  an operator has registered, waiting for new number input
+        [ 1 + ]
+     4  first digit of second number has registered, recentNum is set
+        [ 1 + 2 ]
+     5  equal sign (=) is used, a result is shown on screen
+        [ 1 + 2 = ]
+     6  equal sign (=) is used, first digit of new number has shown on screen
+        [ 1 + 2 = 4 ]
      7  new operator has registered, recentNum is set, waiting for new number input
-     8  second operator(higher precedence) has registered from stage 4 without "=", first number storedNum is on hold, waiting for new number input
-     9  first digit of third number (display) has registered and shown on screen, storedNum is still on hold
-    10  new second operator(higher precedence) has registered from stage 9 without "=", storedNum is still on hold, result is stored and waiting for new number input
+        [ 1 + 2 = 4 + ]
+     8  second operator(higher precedence) has registered from stage 4 without "=",
+        first number storedNum is on hold, waiting for new number input
+        [ 1 + 2 * ]
+     9  first digit of third number (display) has registered and shown on screen,
+        storedNum is still on hold
+        [ 1 + 2 * 4 ]
+    10  new second operator(higher precedence) has registered from stage 9 without "=",
+        storedNum is still on hold, result is stored and waiting for new number input
+        [ 1 + 2 * 4 / ]
     11  first digit of new third number (display) has registered and shown on screen
+        [ 1 + 2 * 4 / 5 ]
 */
 
 import React, { Component } from 'react'
@@ -45,7 +59,7 @@ export default class Calculator extends Component {
         })
     }
     pressKeyNumber = () => {
-        const setNum = (numString, newKey) => numString === "0" ? newKey : numString + newKey
+        const setNum = (numStr, newKey) => numStr === "0" ? newKey : numStr + newKey
         const { userKey, display, recentNum, resetDisplay, stage } = this.state
         const result = setNum(display, userKey)
         switch (stage) {
@@ -82,32 +96,41 @@ export default class Calculator extends Component {
         }
     }
     pressKeyOperator = () => {
+        const cleanTrailingZeros = (numStr) => {
+            if (numStr === "ERROR" || numStr.includes("e") || !numStr.includes(".")) return numStr
+            const numArr = numStr.split("")
+            while (numArr[numArr.length - 1] === "0" || numArr[numArr.length - 1] === ".") {
+                if (numArr.pop() === ".") break
+            }
+            return numArr.join("")
+        }
         const proceedCalculation = (oprOne, oprTwo) => {
             const operators = "*/"
             const oprOnePrec = operators.includes(oprOne) ? 2 : 1
             const oprTwoPrec = operators.includes(oprTwo) ? 2 : 1
             return oprOnePrec >= oprTwoPrec
         }
-        const { userKey, currentOpr, storedOpr, stage } = this.state
+        const { userKey, display, currentOpr, storedOpr, stage } = this.state
+        const result = cleanTrailingZeros(display)
         switch (stage) {
             case 1:
-                this.setState({ currentOpr: userKey, resetDisplay: false, allClear: false, stage: 3 })
+                this.setState({ display: result, currentOpr: userKey, resetDisplay: false, allClear: false, stage: 3 })
                 return
             case 4:
                 if (proceedCalculation(currentOpr, userKey)) {
                     this.pressKeyEqual()
                     return
                 }
-                this.setState({ currentOpr: userKey, storedOpr: currentOpr, stage: 8 })
+                this.setState({ display: result, currentOpr: userKey, storedOpr: currentOpr, stage: 8 })
                 return
             case 2:
             case 3:
             case 5:
-                this.setState({ currentOpr: userKey, stage: 3 })
+                this.setState({ display: result, currentOpr: userKey, stage: 3 })
                 return
             case 6:
             case 7:
-                this.setState({ currentOpr: userKey, stage: 7 })
+                this.setState({ display: result, currentOpr: userKey, stage: 7 })
                 return
             case 8:
             case 10:
@@ -115,7 +138,7 @@ export default class Calculator extends Component {
                     this.pressKeyEqual()
                     return
                 }
-                this.setState({ currentOpr: userKey })
+                this.setState({ display: result, currentOpr: userKey })
                 return
             case 9:
             case 11:
@@ -126,15 +149,45 @@ export default class Calculator extends Component {
         }
     }
     pressKeyEqual = () => {
-        const operationResult = (firstNum, secondNum, operator) => {
-            if (firstNum === "ERROR" || secondNum === "ERROR") {
-                return "ERROR"
+        const getDecimalDigits = (numStr) => {
+            if (numStr.includes("e+")) return 0
+            if (numStr.includes("e-")) {
+                const expLength = Math.abs(numStr.split("e")[1])
+                if (!numStr.includes(".")) {
+                    return expLength
+                }
+                const decLength = numStr.split(".")[1].split("e")[0].length
+                return decLength + expLength
             }
+            if (numStr.includes(".")) {
+                return numStr.split(".")[1].length
+            }
+            return 0
+        }
+        const calculateResult = (numOne, numTwo, operator) => {
+            if (numOne === "ERROR" || numTwo === "ERROR") return "ERROR"
+            const decDigitsOne = getDecimalDigits(numOne)
+            const decDigitsTwo = getDecimalDigits(numTwo)
             switch (operator) {
-                case "+": return Number(firstNum) + Number(secondNum)
-                case "-": return Number(firstNum) - Number(secondNum)
-                case "*": return Number(firstNum) * Number(secondNum)
-                case "/": return Number(secondNum) === 0 ? "ERROR" : Number(firstNum) / Number(secondNum)
+                case "+": return Number((Number(numOne) + Number(numTwo)).toFixed(Math.max(decDigitsOne, decDigitsTwo))).toString()
+                case "-": return Number((Number(numOne) - Number(numTwo)).toFixed(Math.max(decDigitsOne, decDigitsTwo))).toString()
+                case "*": return Number((Number(numOne) * Number(numTwo)).toFixed(decDigitsOne + decDigitsTwo)).toString()
+                case "/":
+                    if (!Number(numTwo)) return "ERROR"
+                    const result = (Number(numOne) / Number(numTwo)).toString()
+                    if (result.includes(".")) {
+                        let numPart = result.includes("e") ? result.split("e")[0] : result
+                        const decPartLength = numPart.split(".")[1].length
+                        if (decPartLength > 9) {
+                            if (numPart.charAt(numPart.length - 2) === "0" && numPart.charAt(numPart.length - 3) === "0") {
+                                numPart = Number(numPart.slice(0, numPart.length - 2)).toString()
+                            } else if (numPart.charAt(numPart.length - 2) === "9" && numPart.charAt(numPart.length - 3) === "9") {
+                                numPart = calculateResult(numPart.slice(0, numPart.length - 2), (0).toFixed(decPartLength - 3) + 1, "+")
+                            }
+                            return numPart + (result.includes("e") ? result.slice(result.search("e")) : "")
+                        }
+                    }
+                    return result
                 default : return
             }
         }
@@ -148,21 +201,24 @@ export default class Calculator extends Component {
                 return
             case 5:
             case 6:
-                result = operationResult(display, recentNum, currentOpr)
+                result = calculateResult(display, recentNum, currentOpr)
                 this.setState({ display: result, stage: 5 })
                 return
             case 3:
             case 7:
-                result = stage === 3 ? operationResult(display, display, currentOpr)
-                                     : operationResult(display, recentNum, currentOpr)
+                result = stage === 3 ? calculateResult(display, display, currentOpr)
+                                     : calculateResult(display, recentNum, currentOpr)
                 this.setState({ display: result, recentNum: display, stage: 5 })
                 return
             case 4:
             case 8:
             case 10:
-                result = stage === 4 ? operationResult(recentNum, display, currentOpr)
-                       : stage === 8 ? operationResult(recentNum, display, storedOpr)
-                                     : operationResult(storedNum, display, storedOpr)
+                console.log("recentNum", recentNum) // don't forget to remove when finish --------------==============
+                console.log("display", display)
+                console.log("currentOpr", currentOpr)
+                result = stage === 4 ? calculateResult(recentNum, display, currentOpr)
+                       : stage === 8 ? calculateResult(recentNum, display, storedOpr)
+                                     : calculateResult(storedNum, display, storedOpr)
                 if (userKey !== "=") {
                     if (stage === 4) {
                         this.setState({ display: result, recentNum: result, currentOpr: userKey, stage: 3 })
@@ -175,12 +231,12 @@ export default class Calculator extends Component {
                 return
             case 9:
             case 11:
-                result = operationResult(recentNum, display, currentOpr)
+                result = calculateResult(recentNum, display, currentOpr)
                 if (("*/").includes(userKey)) {
                     this.setState({ display: result, recentNum: result, currentOpr: userKey, stage: 10 })
                     return
                 }
-                result = operationResult(storedNum, result, storedOpr)
+                result = calculateResult(storedNum, result, storedOpr)
                 if (("+-").includes(userKey)) {
                     this.setState({ display: result, recentNum: result, currentOpr: userKey, stage: 3 })
                     return
@@ -192,11 +248,9 @@ export default class Calculator extends Component {
         }
     }
     pressKeyInverse = () => {
-        const inverseNum = (numString) => {
-            if (numString === "ERROR" || Number(numString) === 0) {
-                return numString
-            }
-            return -numString
+        const inverseNum = (numStr) => {
+            if (numStr === "ERROR" || !Number(numStr)) return numStr
+            return (-numStr).toString()
         }
         const { display, resetDisplay, stage } = this.state
         const result = inverseNum(display)
@@ -213,15 +267,13 @@ export default class Calculator extends Component {
         }
     }
     pressKeyDecimal = () => {
-        const addDecimalPoint = (numString) => {
-            if (numString === "ERROR" || numString.toString().includes(".")) {
-                return numString
-            }
-            return numString.toString() + "."
+        const addDecimalPoint = (numStr) => {
+            if (numStr === "ERROR" || numStr.includes(".")) return numStr
+            return numStr + "."
         }
         const { display, recentNum, stage } = this.state
-        const addZeroStages = [ 1, 5, 3, 7, 8, 10 ]
-        const result = addDecimalPoint( addZeroStages.includes(stage) ? "0" : display )
+        const newNumStages = [ 1, 5, 3, 7, 8, 10 ]
+        const result = addDecimalPoint(newNumStages.includes(stage) ? "0" : display)
         switch (stage) {
             case 1:
                 this.setState({ display: result, resetDisplay: false, allClear: false, stage: 2 })
@@ -253,12 +305,7 @@ export default class Calculator extends Component {
         }
     }
     pressKeyPercent = () => {
-        const applyPercentage = (numString) => {
-            if (numString === "ERROR") {
-                return numString
-            }
-            return Number(numString) / 100
-        }
+        const applyPercentage = (numStr) => numStr === "ERROR" ? numStr : (Number(numStr) / 100).toString()
         const { display, recentNum, resetDisplay, stage } = this.state
         const result = applyPercentage(display)
         switch (stage) {
@@ -293,8 +340,7 @@ export default class Calculator extends Component {
         }
     }
     getUserKey = (e) => {
-        const { userKey } = this.state
-        this.setState({ userKey: e.target.value, previousKey: userKey })
+        this.setState({ userKey: e.target.value })
     }
     formSubmit = (e) => {
         e.preventDefault()
@@ -302,7 +348,7 @@ export default class Calculator extends Component {
     }
     sendUserKey = () => {
         const { userKey } = this.state
-        console.log(userKey)    // don't forget to remove --------------==============
+        console.log(userKey)    // don't forget to remove when finish --------------==============
         const others = "ci=.%"
         if (others.includes(userKey)) {
             switch (userKey) {
@@ -314,8 +360,7 @@ export default class Calculator extends Component {
                 default : return
             }
         }
-        const operators = "+-*/"
-        operators.includes(userKey) ? this.pressKeyOperator() : this.pressKeyNumber()
+        ("+-*/").includes(userKey) ? this.pressKeyOperator() : this.pressKeyNumber()
     }
     render() {
         return (
