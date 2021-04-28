@@ -3,7 +3,7 @@ import "./CalculatorUI.css"
 
 export default function CalculatorUI({ getUserKey, formSubmit, display, allClear }) {
     const formatDisplay = (numStr) => {
-        if (numStr === "ERROR" || numStr.includes("e")) return numStr
+        if (numStr === "ERROR" || numStr.includes("e") || numStr.includes("Infinity")) return numStr
         const separated = numStr.split(".")
         const ignoreIndex = separated[0].charAt(0) === "-" ? 1 : 0
         if (separated[0].length <= ignoreIndex + 3) {
@@ -29,7 +29,7 @@ export default function CalculatorUI({ getUserKey, formSubmit, display, allClear
                 <button onClick={getUserKey} value="=" id="calc-equ" className="calc-btn equ-btn" tabIndex="-1">=</button>
                 <button onClick={getUserKey} value="i" id="calc-inv" className="calc-btn inv-btn" tabIndex="-1">+/-</button>
                 <button onClick={getUserKey} value="." id="calc-dec" className="calc-btn dec-btn" tabIndex="-1">.</button>
-                <button onClick={getUserKey} value="%" id="calc-prc" className="calc-btn prc-btn" tabIndex="-1">%</button>
+                <button onClick={getUserKey} value="%" id="calc-prc" className="calc-btn prc-btn" tabIndex="-1">﹪</button>
                 <button onClick={getUserKey} value="/" id="calc-div" className="calc-btn opr-btn" tabIndex="-1">÷</button>
                 <button onClick={getUserKey} value="*" id="calc-mul" className="calc-btn opr-btn" tabIndex="-1">×</button>
                 <button onClick={getUserKey} value="-" id="calc-sub" className="calc-btn opr-btn" tabIndex="-1">−</button>

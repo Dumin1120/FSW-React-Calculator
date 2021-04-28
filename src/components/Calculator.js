@@ -60,19 +60,23 @@ export default class Calculator extends Component {
     }
     pressKeyDelete = () => {
         const deleteLastDigit = (numStr) => {
-            if (numStr === "ERROR") return numStr
-            if (numStr.length === 1 || numStr.includes("e") || (numStr.length === 2 && numStr.charAt(0) === "-") || numStr === "-0.") {
+            if (numStr === "ERROR" || numStr.includes("e") || numStr.includes("Infinity") || isNaN(numStr)) return numStr
+            if (numStr.length === 1 || (numStr.length === 2 && numStr.charAt(0) === "-") || numStr === "-0.") {
                 return "0"
             }
             return numStr.slice(0, numStr.length - 1)
         }
-        const { display, stage } = this.state
+        const { display, resetDisplay, stage } = this.state
         const result = deleteLastDigit(display)
         switch (stage) {
-            case 5:
-                this.setState({ display: result, stage: 6 })
-                return
             case 1:
+                if (!resetDisplay) return
+                this.setState({ display: result, resetDisplay: false, stage: 2 })
+                return
+            case 5:
+                const stageNum = result === "ERROR" || result.includes("e") || result.includes("Infinity") || isNaN(result) ? 5 : 6
+                this.setState({ display: result, stage: stageNum })
+                return
             case 3:
             case 7:
             case 8:
@@ -106,15 +110,14 @@ export default class Calculator extends Component {
             case 5:
                 this.setState({ display: userKey, stage: 6 })
                 return
-            case 3:
-            case 7:
-                this.setState({ display: userKey, recentNum: display, stage: 4 })
-                return
             case 8:
                 this.setState({ display: userKey, recentNum: display, storedNum: recentNum, stage: 9 })
                 return
+            case 3:
+            case 7:
             case 10:
-                this.setState({ display: userKey, recentNum: display, stage: 11 })
+                const stageNum = stage === 10 ? 11 : 4
+                this.setState({ display: userKey, recentNum: display, stage: stageNum })
                 return
             case 4:
             case 6:
@@ -157,11 +160,10 @@ export default class Calculator extends Component {
             case 2:
             case 3:
             case 5:
-                this.setState({ display: result, currentOpr: userKey, stage: 3 })
-                return
             case 6:
             case 7:
-                this.setState({ display: result, currentOpr: userKey, stage: 7 })
+                const stageNum = ([6, 7]).includes(stage) ? 7 : 3
+                this.setState({ display: result, currentOpr: userKey, stage: stageNum })
                 return
             case 8:
             case 10:
@@ -197,6 +199,7 @@ export default class Calculator extends Component {
         }
         const calculateResult = (numOne, numTwo, operator) => {
             if (numOne === "ERROR" || numTwo === "ERROR") return "ERROR"
+            if (isNaN(numOne) || isNaN(numTwo)) return "NaN"
             const lengthOne = getDecimalDigitLength(numOne)
             const lengthTwo = getDecimalDigitLength(numTwo)
             const longerLength = Math.max(lengthOne, lengthTwo)
@@ -209,17 +212,16 @@ export default class Calculator extends Component {
                     const result = (Number(numOne) / Number(numTwo)).toString()
                     let numStr = result.includes("e") ? result.split("e")[0] : result
                     const decimalLength = numStr.includes(".") ? numStr.split(".")[1].length : 0
-                    if (decimalLength > 9) {
-                        const lastSecondDigit = numStr.charAt(numStr.length - 2)
-                        const lastThirdDigit = numStr.charAt(numStr.length - 3)
-                        const lastTwoDigitsRemoved = numStr.slice(0, numStr.length - 2)
-                        const addingExtra = numStr[0] === "-" ? "-" + (0).toFixed(decimalLength - 3) + 1 : (0).toFixed(decimalLength - 3) + 1
-                        numStr = lastSecondDigit === "0" && lastThirdDigit === "0" ? Number(lastTwoDigitsRemoved).toString()
-                               : lastSecondDigit === "9" && lastThirdDigit === "9" ? calculateResult(lastTwoDigitsRemoved, addingExtra, "+")
-                                                                                   : numStr
-                        return numStr + (result.includes("e") ? result.slice(result.search("e")) : "")
-                    }
-                    return result
+                    if (decimalLength < 10 ) return result
+                    const lastSecondDigit = numStr.charAt(numStr.length - 2)
+                    const lastThirdDigit = numStr.charAt(numStr.length - 3)
+                    const lastTwoDigitsRemoved = numStr.slice(0, numStr.length - 2)
+                    const addingExtra = (0).toFixed(decimalLength - 3) + 1
+                    const extraOpr = numStr[0] === "-" ? "-" : "+"
+                    numStr = lastSecondDigit === "0" && lastThirdDigit === "0" ? Number(lastTwoDigitsRemoved).toString()
+                           : lastSecondDigit === "9" && lastThirdDigit === "9" ? calculateResult(lastTwoDigitsRemoved, addingExtra, extraOpr)
+                                                                               : numStr
+                    return numStr + (result.includes("e") ? result.slice(result.search("e")) : "")
                 default : return
             }
         }
@@ -248,15 +250,12 @@ export default class Calculator extends Component {
                 result = stage === 4 ? calculateResult(recentNum, display, currentOpr)
                        : stage === 8 ? calculateResult(recentNum, display, storedOpr)
                                      : calculateResult(storedNum, display, storedOpr)
-                if (userKey !== "=") {
-                    if (stage === 4) {
-                        this.setState({ display: result, recentNum: result, currentOpr: userKey, stage: 3 })
-                        return
-                    }
-                    this.setState({ display: result, recentNum: display, currentOpr: userKey, stage: 3 })
+                if (userKey === "=") {
+                    this.setState({ display: result, recentNum: display, stage: 5 })
                     return
                 }
-                this.setState({ display: result, recentNum: display, stage: 5 })
+                const choice = stage === 4 ? result : display
+                this.setState({ display: result, recentNum: choice, currentOpr: userKey, stage: 3 })
                 return
             case 9:
             case 11:
@@ -285,10 +284,8 @@ export default class Calculator extends Component {
         const result = inverseNum(display)
         switch (stage) {
             case 1:
-                if (resetDisplay) {
-                    this.setState({ display: result, resetDisplay: false, stage: 2 })
-                    return
-                }
+                if (!resetDisplay) return
+                this.setState({ display: result, resetDisplay: false, stage: 2 })
                 return
             default:
                 this.setState({ display: result })
@@ -297,18 +294,15 @@ export default class Calculator extends Component {
     }
     pressKeyDecimal = () => {
         const addDecimalPoint = (numStr) => {
-            if (numStr === "ERROR" || numStr.includes(".")) return numStr
+            if (numStr === "ERROR" || numStr.includes(".") || numStr.includes("e") || numStr.includes("Infinity") || isNaN(numStr)) return numStr
             return numStr + "."
         }
         const { display, recentNum, stage } = this.state
-        const newNumStages = [ 1, 5, 3, 7, 8, 10 ]
-        const result = addDecimalPoint(newNumStages.includes(stage) ? "0" : display)
+        const fillZeroStages = [ 1, 5, 3, 7, 8, 10 ]
+        const result = addDecimalPoint(fillZeroStages.includes(stage) ? "0" : display)
         switch (stage) {
             case 1:
                 this.setState({ display: result, resetDisplay: false, allClear: false, stage: 2 })
-                return
-            case 2:
-                this.setState({ display: result, stage: 2 })
                 return
             case 5:
                 this.setState({ display: result, stage: 6 })
@@ -323,6 +317,7 @@ export default class Calculator extends Component {
             case 10:
                 this.setState({ display: result, recentNum: display, stage: 11 })
                 return
+            case 2:
             case 4:
             case 6:
             case 9:
@@ -334,32 +329,30 @@ export default class Calculator extends Component {
         }
     }
     pressKeyPercent = () => {
-        const applyPercentage = (numStr) => numStr === "ERROR" ? numStr : (Number(numStr) / 100).toString()
+        const applyPercentage = (numStr) => numStr === "ERROR" || numStr.includes("Infinity") || isNaN(numStr) ? numStr : (Number(numStr) / 100).toString()
         const { display, recentNum, resetDisplay, stage } = this.state
         const result = applyPercentage(display)
         switch (stage) {
             case 1:
-                if (resetDisplay) {
-                    this.setState({ display: result, resetDisplay: false, stage: 2 })
-                    return
-                }
+                if (!resetDisplay) return
+                this.setState({ display: result, resetDisplay: false, stage: 2 })
                 return
             case 5:
-            case 6:
-                this.setState({ display: result, stage: 6 })
-                return
-            case 3:
-            case 7:
-                this.setState({ display: result, recentNum: display, stage: 4 })
+                const stageNum = result === "ERROR" || result.includes("Infinity") || isNaN(result) ? 5 : 6
+                this.setState({ display: result, stage: stageNum })
                 return
             case 8:
                 this.setState({ display: result, recentNum: display, storedNum: recentNum, stage: 9 })
                 return
+            case 3:
+            case 7:
             case 10:
-                this.setState({ display: result, recentNum: display, stage: 11 })
+                const stageNumber = stage === 10 ? 11 : 4
+                this.setState({ display: result, recentNum: display, stage: stageNumber })
                 return
             case 2:
             case 4:
+            case 6:
             case 9:
             case 11:
                 this.setState({ display: result })
@@ -378,18 +371,16 @@ export default class Calculator extends Component {
     sendUserKey = () => {
         const { userKey } = this.state
         const others = "cdi=.%"
-        if (others.includes(userKey)) {
-            switch (userKey) {
-                case "c": return this.pressKeyAllClear()
-                case "d": return this.pressKeyDelete()
-                case "=": return this.pressKeyEqual()
-                case "i": return this.pressKeyInverse()
-                case ".": return this.pressKeyDecimal()
-                case "%": return this.pressKeyPercent()
-                default : return
-            }
+        if (!others.includes(userKey)) return ("+-*/").includes(userKey) ? this.pressKeyOperator() : this.pressKeyNumber()
+        switch (userKey) {
+            case "c": return this.pressKeyAllClear()
+            case "d": return this.pressKeyDelete()
+            case "=": return this.pressKeyEqual()
+            case "i": return this.pressKeyInverse()
+            case ".": return this.pressKeyDecimal()
+            case "%": return this.pressKeyPercent()
+            default : return
         }
-        ("+-*/").includes(userKey) ? this.pressKeyOperator() : this.pressKeyNumber()
     }
     render() {
         return (
