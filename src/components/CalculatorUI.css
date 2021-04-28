@@ -1,29 +1,39 @@
+@font-face {
+    font-family: "digital7";
+    src: url("./font/digital-7.ttf");
+}
 body {
     background-color: rgb(85,125,205);
 }
-.calc {
+.calculator {
+    -webkit-user-select: none;  
+    -moz-user-select: none;    
+    -ms-user-select: none;      
+    user-select: none;
     display: grid;
-    grid-template: repeat(6, 120px) / repeat(4, 120px);
+    height: 100%;
+    place-items: center;
+}
+.calc-interface {
+    display: grid;
+    grid-template: repeat(6, 80px) / repeat(4, 80px);
     grid-template-areas: "sc sc sc sc"
-                         "ac oi op od"
+                         "ac de op od"
                          "n7 n8 n9 om"
                          "n4 n5 n6 os"
                          "n1 n2 n3 oa"
-                         "n0 n0 dc oe";
-    border: 2px solid black;
-}
-#calc-scr {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    font-size: 2em;
-    border: 2px solid black;
-}
-.calc-btn {
-    font-size: 3em;
+                         "oi n0 dc oe";
+    row-gap: 8px;
+    column-gap: 5px;
+    padding: 16px 12px 20px 12px;
+    border: 3px solid rgb(37, 37, 37);
+    border-radius: 20px 20px 20px 20px;
+    background-color: rgb(170, 170, 170);
+    box-shadow: 5px 5px 20px;
 }
 #calc-scr { grid-area: sc }
 #calc-clr { grid-area: ac }
+#calc-del { grid-area: de }
 #calc-inv { grid-area: oi }
 #calc-prc { grid-area: op }
 #calc-div { grid-area: od }
@@ -42,3 +52,73 @@ body {
 #calc-n8  { grid-area: n8 }
 #calc-n9  { grid-area: n9 }
 #calc-n0  { grid-area: n0 }
+#calc-scr {
+    display: flex;
+    align-items: center;
+    margin: 5px 5px 10px 5px;
+    border: 2px solid black;
+    border-radius: 6px;
+    background-color: aquamarine;
+}
+#calc-text-scr {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-end;
+    align-items: center;
+    font-family: "digital7";
+    font-size: 1.9em;
+    margin-right: 6px;
+    overflow: hidden;
+    width: 100%;
+}
+.calc-btn {
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: rgb(245, 245, 245);
+    background-color: rgb(120, 120, 120);
+    font-size: 2em;
+    margin: 5px;
+    border-radius: 15px;
+    box-shadow: 2px 2px rgb(50, 50, 50);
+}
+.calc-btn:hover {
+    background-color: rgb(112, 112, 112);
+}
+.calc-btn:active {
+    color: rgb(207, 207, 207);
+    box-shadow: inset 2px 2px rgb(10, 10, 10)
+}
+.mem-btn {
+    background-color: rgb(255, 156, 139);
+    font-size: 1.5em;
+}
+.mem-btn:hover {
+    background-color: rgb(255, 142, 122);
+}
+.mem-btn:active {
+    color: rgb(243, 214, 214);
+}
+.opr-btn {
+    font-size: 2.5em
+}
+.opr-btn, .prc-btn {
+    background-color: rgb(255, 192, 90);
+}
+.opr-btn:hover, .prc-btn:hover {
+    background-color: rgb(255, 175, 47);
+}
+.opr-btn:active, .prc-btn:active {
+    color: rgb(241, 223, 194);
+}
+.equ-btn {
+    font-size: 2.5em;
+    background-color: rgb(255, 176, 50);
+}
+.equ-btn:hover {
+    background-color: rgb(255, 166, 23);
+}
+.equ-btn:active {
+    color: rgb(234, 218, 191);
+}

@@ -58,6 +58,37 @@ export default class Calculator extends Component {
             stage: 1
         })
     }
+    pressKeyDelete = () => {
+        const deleteLastDigit = (numStr) => {
+            if (numStr === "ERROR") return numStr
+            if (numStr.length === 1 || numStr.includes("e") || (numStr.length === 2 && numStr.charAt(0) === "-") || numStr === "-0.") {
+                return "0"
+            }
+            return numStr.slice(0, numStr.length - 1)
+        }
+        const { display, stage } = this.state
+        const result = deleteLastDigit(display)
+        switch (stage) {
+            case 5:
+                this.setState({ display: result, stage: 6 })
+                return
+            case 1:
+            case 3:
+            case 7:
+            case 8:
+            case 10:
+                return
+            case 2:
+            case 4:
+            case 6:
+            case 9:
+            case 11:
+                this.setState({ display: result })
+                return
+            default:
+                return
+        }
+    }
     pressKeyNumber = () => {
         const setNum = (numStr, newKey) => numStr === "0" ? newKey : numStr + newKey
         const { userKey, display, recentNum, resetDisplay, stage } = this.state
@@ -346,10 +377,11 @@ export default class Calculator extends Component {
     }
     sendUserKey = () => {
         const { userKey } = this.state
-        const others = "ci=.%"
+        const others = "cdi=.%"
         if (others.includes(userKey)) {
             switch (userKey) {
                 case "c": return this.pressKeyAllClear()
+                case "d": return this.pressKeyDelete()
                 case "=": return this.pressKeyEqual()
                 case "i": return this.pressKeyInverse()
                 case ".": return this.pressKeyDecimal()

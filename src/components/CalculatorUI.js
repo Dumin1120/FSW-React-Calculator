@@ -16,17 +16,34 @@ export default function CalculatorUI({ getUserKey, formSubmit, display, allClear
         separated[0] = grouping
         return separated.join("")
     }
-    const setupButtons = () => {
-        const btnValues = "ci%/*-+=.1234567890"
-        const btnIDs = ["clr", "inv", "prc", "div", "mul", "sub", "add", "equ", "dec", "n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "n9", "n0"]
-        const btnText = [`${allClear ? "AC" : "C"}`, "+/-", "%", "÷", "×", "−", "+", "=", ".", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]
-        return btnIDs.map((id, i) => <button onClick={getUserKey} value={btnValues.charAt(i)} className="calc-btn" id={`calc-${id}`} key={i}>{btnText[i]}</button>)
-    }
     return (
-        <div>
-            <form className="calc" onSubmit={formSubmit}>
-                <div id="calc-scr">{formatDisplay(display)}</div>
-                {setupButtons()}
+        <div className="calculator">
+            <form className="calc-interface" onSubmit={formSubmit}>
+                <div id="calc-scr">
+                    <div id="calc-text-scr">
+                        {formatDisplay(display)}
+                    </div>
+                </div>
+                <button onClick={getUserKey} value="c" id="calc-clr" className="calc-btn mem-btn" tabIndex="-1">{`${allClear ? "AC" : "CE"}`}</button>
+                <button onClick={getUserKey} value="d" id="calc-del" className="calc-btn mem-btn" tabIndex="-1">⌫</button>
+                <button onClick={getUserKey} value="=" id="calc-equ" className="calc-btn equ-btn" tabIndex="-1">=</button>
+                <button onClick={getUserKey} value="i" id="calc-inv" className="calc-btn inv-btn" tabIndex="-1">+/-</button>
+                <button onClick={getUserKey} value="." id="calc-dec" className="calc-btn dec-btn" tabIndex="-1">.</button>
+                <button onClick={getUserKey} value="%" id="calc-prc" className="calc-btn prc-btn" tabIndex="-1">%</button>
+                <button onClick={getUserKey} value="/" id="calc-div" className="calc-btn opr-btn" tabIndex="-1">÷</button>
+                <button onClick={getUserKey} value="*" id="calc-mul" className="calc-btn opr-btn" tabIndex="-1">×</button>
+                <button onClick={getUserKey} value="-" id="calc-sub" className="calc-btn opr-btn" tabIndex="-1">−</button>
+                <button onClick={getUserKey} value="+" id="calc-add" className="calc-btn opr-btn" tabIndex="-1">+</button>
+                <button onClick={getUserKey} value="1" id="calc-n1"  className="calc-btn num-btn" tabIndex="-1">1</button>
+                <button onClick={getUserKey} value="2" id="calc-n2"  className="calc-btn num-btn" tabIndex="-1">2</button>
+                <button onClick={getUserKey} value="3" id="calc-n3"  className="calc-btn num-btn" tabIndex="-1">3</button>
+                <button onClick={getUserKey} value="4" id="calc-n4"  className="calc-btn num-btn" tabIndex="-1">4</button>
+                <button onClick={getUserKey} value="5" id="calc-n5"  className="calc-btn num-btn" tabIndex="-1">5</button>
+                <button onClick={getUserKey} value="6" id="calc-n6"  className="calc-btn num-btn" tabIndex="-1">6</button>
+                <button onClick={getUserKey} value="7" id="calc-n7"  className="calc-btn num-btn" tabIndex="-1">7</button>
+                <button onClick={getUserKey} value="8" id="calc-n8"  className="calc-btn num-btn" tabIndex="-1">8</button>
+                <button onClick={getUserKey} value="9" id="calc-n9"  className="calc-btn num-btn" tabIndex="-1">9</button>
+                <button onClick={getUserKey} value="0" id="calc-n0"  className="calc-btn num-btn" tabIndex="-1">0</button>
             </form>
         </div>
     )
