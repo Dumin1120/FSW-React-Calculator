@@ -223,16 +223,15 @@ export default class Calculator extends Component {
                 result = cleanTrailingZeros(display)
                 this.setState({ display: result, resetDisplay: true, allClear: false, stage: 1 })
                 return
+            case 3:
+                result = calculateResult(display, display, currentOpr)
+                this.setState({ display: result, recentNum: display, stage: 5 })
+                return
             case 5:
             case 6:
+            case 7:
                 result = calculateResult(display, recentNum, currentOpr)
                 this.setState({ display: result, stage: 5 })
-                return
-            case 3:
-            case 7:
-                result = stage === 3 ? calculateResult(display, display, currentOpr)
-                                     : calculateResult(display, recentNum, currentOpr)
-                this.setState({ display: result, recentNum: display, stage: 5 })
                 return
             case 4:
             case 8:
