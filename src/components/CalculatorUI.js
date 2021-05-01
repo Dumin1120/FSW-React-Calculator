@@ -34,6 +34,8 @@ export default function CalculatorUI({ getUserKey, formSubmit, userKey, display,
                 operationArr.push(recentNum, currMathOpr, display)
                 break
             case 1:
+                if(allClear) break
+                // eslint-disable-next-line
             case 2:
             case 5:
             case 6:

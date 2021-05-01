@@ -84,7 +84,7 @@ export default class Calculator extends Component {
         this.state = {
             userKey: null,
             display: "0",
-            history: "0",
+            history: "",
             recentNum: null,
             storedNum: null,
             currentOpr: null,
@@ -98,7 +98,7 @@ export default class Calculator extends Component {
         this.setState({
             userKey: null,
             display: "0",
-            history: "0",
+            history: "",
             recentNum: null,
             storedNum: null,
             currentOpr: null,
