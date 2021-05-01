@@ -1,7 +1,7 @@
 import React from 'react'
 import "./CalculatorUI.css"
 
-export default function CalculatorUI({ getUserKey, formSubmit, display, allClear }) {
+export default function CalculatorUI({ getUserKey, formSubmit, userKey, display, history, recentNum, storedNum, currentOpr, storedOpr, allClear, stage }) {
     const formatDisplay = (numStr) => {
         if (numStr === "ERROR" || numStr.includes("e") || numStr.includes("Infinity")) return numStr
         const separated = numStr.split(".")
@@ -16,11 +16,56 @@ export default function CalculatorUI({ getUserKey, formSubmit, display, allClear
         separated[0] = grouping
         return separated.join("")
     }
+    const showHistory = () => {
+        if (userKey === "=") return history
+        const convertToMathOperator = (operator) => {
+            switch (operator) {
+                case "/": return "÷"
+                case "*": return "×"
+                case "-": return "−"
+                default : return "+"
+            }
+        }
+        const currMathOpr = convertToMathOperator(currentOpr)
+        const storMathOpr = convertToMathOperator(storedOpr)
+        const operationArr = []
+        switch (stage) {
+            case 4:
+                operationArr.push(recentNum, currMathOpr, display)
+                break
+            case 1:
+            case 2:
+            case 5:
+            case 6:
+                operationArr.push(display)
+                break
+            case 3:
+            case 7:
+                operationArr.push(display, currMathOpr)
+                break
+            case 8:
+                operationArr.push(recentNum, storMathOpr, display, currMathOpr)
+                break
+            case 10:
+                operationArr.push(storedNum, storMathOpr, display, currMathOpr)
+                break
+            case 9:
+            case 11:
+                operationArr.push(storedNum, storMathOpr, recentNum, currMathOpr, display)
+                break
+            default:
+                break
+        }
+        return operationArr.join(" ")
+    }
     return (
         <div className="calculator">
             <form className="calc-interface" onSubmit={formSubmit}>
                 <div id="calc-scr">
-                    <div id="calc-text-scr">
+                    <div className="calc-scr-display">
+                        {showHistory()}
+                    </div>
+                    <div className="calc-scr-display">
                         {formatDisplay(display)}
                     </div>
                 </div>
