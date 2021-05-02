@@ -2,7 +2,7 @@ import React from 'react'
 import "./CalculatorUI.css"
 
 export default function CalculatorUI({ getUserKey, formSubmit, userKey, display, history, recentNum, storedNum, currentOpr, storedOpr, allClear, stage }) {
-    const formatDisplay = (numStr) => {
+    const formatDisplayWithComma = (numStr) => {
         if (numStr === "ERROR" || numStr.includes("e") || numStr.includes("Infinity")) return numStr
         const separated = numStr.split(".")
         const ignoreIndex = separated[0].charAt(0) === "-" ? 1 : 0
@@ -68,7 +68,7 @@ export default function CalculatorUI({ getUserKey, formSubmit, userKey, display,
                         {showHistory()}
                     </div>
                     <div className="calc-scr-display">
-                        {formatDisplay(display)}
+                        {formatDisplayWithComma(display)}
                     </div>
                 </div>
                 <button onClick={getUserKey} value="c" id="calc-clr" className="calc-btn mem-btn" tabIndex="-1">{`${allClear ? "AC" : "CE"}`}</button>

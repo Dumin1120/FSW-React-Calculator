@@ -31,7 +31,7 @@ import React, { Component } from 'react'
 import CalculatorUI from "./CalculatorUI"
 
 const cleanTrailingZeros = (numStr) => {
-    if (numStr === "ERROR" || numStr.includes("e") || !numStr.includes(".")) return numStr
+    if (!numStr.includes(".") || numStr.includes("e")) return numStr
     const numArr = numStr.split("")
     while (("0.").includes(numArr[numArr.length - 1])) {
         if (numArr.pop() === ".") break
@@ -67,7 +67,7 @@ const calculateResult = (numOne, numTwo, operator) => {
             if (decimalLength < 10 ) return result
             const lastSecondDigit = numStr.charAt(numStr.length - 2)
             const lastThirdDigit = numStr.charAt(numStr.length - 3)
-            const lastTwoDigitsRemoved = numStr.slice(0, numStr.length - 2)
+            const lastTwoDigitsRemoved = numStr.slice(0, -2)
             const addingExtra = (0).toFixed(decimalLength - 3) + 1
             const extraOpr = numStr[0] === "-" ? "-" : "+"
             numStr = lastSecondDigit === "0" && lastThirdDigit === "0" ? Number(lastTwoDigitsRemoved).toString()
@@ -113,7 +113,7 @@ export default class Calculator extends Component {
         const deleteLastDigit = (numStr) => {
             if (errorCheck(numStr)) return numStr
             if (numStr.length === 1 || (numStr.length === 2 && numStr.charAt(0) === "-") || numStr === "-0.") return "0"
-            return numStr.slice(0, numStr.length - 1)
+            return numStr.slice(0, -1)
         }
         const { display, resetDisplay, stage } = this.state
         const result = deleteLastDigit(display)
@@ -183,14 +183,14 @@ export default class Calculator extends Component {
             return oprOnePrec >= oprTwoPrec
         }
         const { userKey, display, currentOpr, storedOpr, stage } = this.state
-        const result = cleanTrailingZeros(display)
+        const displayFix = cleanTrailingZeros(display)
         switch (stage) {
             case 1:
-                this.setState({ display: result, currentOpr: userKey, resetDisplay: false, allClear: false, stage: 3 })
+                this.setState({ display: displayFix, currentOpr: userKey, resetDisplay: false, allClear: false, stage: 3 })
                 return
             case 4:
                 if (proceedCalculation(currentOpr, userKey)) return this.pressKeyEqual()
-                this.setState({ display: result, currentOpr: userKey, storedOpr: currentOpr, stage: 8 })
+                this.setState({ display: displayFix, currentOpr: userKey, storedOpr: currentOpr, stage: 8 })
                 return
             case 2:
             case 3:
@@ -198,12 +198,12 @@ export default class Calculator extends Component {
             case 6:
             case 7:
                 const stageNum = ([6, 7]).includes(stage) ? 7 : 3
-                this.setState({ display: result, currentOpr: userKey, stage: stageNum })
+                this.setState({ display: displayFix, currentOpr: userKey, stage: stageNum })
                 return
             case 8:
             case 10:
                 if (proceedCalculation(storedOpr, userKey)) return this.pressKeyEqual()
-                this.setState({ display: result, currentOpr: userKey })
+                this.setState({ display: displayFix, currentOpr: userKey })
                 return
             case 9:
             case 11:
@@ -215,40 +215,40 @@ export default class Calculator extends Component {
     }
     pressKeyEqual = () => {
         const { userKey, display, recentNum, storedNum, currentOpr, storedOpr, stage } = this.state
+        const displayFix = cleanTrailingZeros(display)
         let result = null
         switch (stage) {
             case 1:
                 return
             case 2:
-                result = cleanTrailingZeros(display)
-                this.setState({ display: result, resetDisplay: true, allClear: false, stage: 1 })
+                this.setState({ display: displayFix, resetDisplay: true, allClear: false, stage: 1 })
                 return
             case 3:
-                result = calculateResult(display, display, currentOpr)
-                this.setState({ display: result, recentNum: display, stage: 5 })
+                result = calculateResult(displayFix, displayFix, currentOpr)
+                this.setState({ display: result, recentNum: displayFix, stage: 5 })
                 return
             case 5:
             case 6:
             case 7:
-                result = calculateResult(display, recentNum, currentOpr)
+                result = calculateResult(displayFix, recentNum, currentOpr)
                 this.setState({ display: result, stage: 5 })
                 return
             case 4:
             case 8:
             case 10:
-                result = stage === 4 ? calculateResult(recentNum, display, currentOpr)
-                       : stage === 8 ? calculateResult(recentNum, display, storedOpr)
-                                     : calculateResult(storedNum, display, storedOpr)
+                result = stage === 4 ? calculateResult(recentNum, displayFix, currentOpr)
+                       : stage === 8 ? calculateResult(recentNum, displayFix, storedOpr)
+                                     : calculateResult(storedNum, displayFix, storedOpr)
                 if (userKey === "=") {
-                    this.setState({ display: result, recentNum: display, stage: 5 })
+                    this.setState({ display: result, recentNum: displayFix, stage: 5 })
                     return
                 }
-                const recentVal = stage === 4 ? result : display
+                const recentVal = stage === 4 ? result : displayFix
                 this.setState({ display: result, recentNum: recentVal, currentOpr: userKey, stage: 3 })
                 return
             case 9:
             case 11:
-                result = calculateResult(recentNum, display, currentOpr)
+                result = calculateResult(recentNum, displayFix, currentOpr)
                 if (("*/").includes(userKey)) {
                     this.setState({ display: result, recentNum: result, currentOpr: userKey, stage: 10 })
                     return
@@ -258,7 +258,7 @@ export default class Calculator extends Component {
                     this.setState({ display: result, recentNum: result, currentOpr: userKey, stage: 3 })
                     return
                 }
-                this.setState({ display: result, recentNum: display, stage: 5 })
+                this.setState({ display: result, recentNum: displayFix, stage: 5 })
                 return
             default:
                 return
@@ -382,35 +382,35 @@ export default class Calculator extends Component {
             }
         }
         const { display, recentNum, storedNum, currentOpr, storedOpr, stage } = this.state
-        const result = cleanTrailingZeros(display)
+        const displayFix = cleanTrailingZeros(display)
         const currMathOpr = convertToMathOperator(currentOpr)
         const storMathOpr = convertToMathOperator(storedOpr)
         const operationArr = []
         switch (stage) {
             case 1:
             case 2:
-                operationArr.push(result)
+                operationArr.push(displayFix)
                 break
             case 3:
-                operationArr.push(result, currMathOpr, result)
+                operationArr.push(displayFix, currMathOpr, displayFix)
                 break
             case 4:
-                operationArr.push(recentNum, currMathOpr, result)
+                operationArr.push(recentNum, currMathOpr, displayFix)
                 break
             case 5:
             case 6:
             case 7:
-                operationArr.push(result, currMathOpr, recentNum)
+                operationArr.push(displayFix, currMathOpr, recentNum)
                 break
             case 8:
-                operationArr.push(recentNum, storMathOpr, result, currMathOpr)
+                operationArr.push(recentNum, storMathOpr, displayFix, currMathOpr)
                 break
             case 10:
-                operationArr.push(storedNum, storMathOpr, result, currMathOpr)
+                operationArr.push(storedNum, storMathOpr, displayFix, currMathOpr)
                 break
             case 9:
             case 11:
-                operationArr.push(storedNum, storMathOpr, recentNum, currMathOpr, result)
+                operationArr.push(storedNum, storMathOpr, recentNum, currMathOpr, displayFix)
                 break
             default:
                 break
