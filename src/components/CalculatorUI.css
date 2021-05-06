@@ -127,3 +127,39 @@ body {
     font-size: 2.4em;
     color: rgb(234, 218, 191);
 }
+@media screen and (max-width: 360px) {
+    .calc-interface {
+        grid-template: repeat(6, 75px) / repeat(4, 75px);
+        grid-template-areas: "sc sc sc sc"
+                             "ac de op od"
+                             "n7 n8 n9 om"
+                             "n4 n5 n6 os"
+                             "n1 n2 n3 oa"
+                             "oi n0 dc oe";
+    }
+}
+@media screen and (max-width: 320px) {
+    .calc-interface {
+        grid-template: repeat(6, 66px) / repeat(4, 66px);
+        grid-template-areas: "sc sc sc sc"
+                             "ac de op od"
+                             "n7 n8 n9 om"
+                             "n4 n5 n6 os"
+                             "n1 n2 n3 oa"
+                             "oi n0 dc oe";
+    }
+}
+@media screen and (max-width: 280px) {
+    .calc-interface {
+        grid-template: repeat(6, 56px) / repeat(4, 56px);
+        grid-template-areas: "sc sc sc sc"
+                             "ac de op od"
+                             "n7 n8 n9 om"
+                             "n4 n5 n6 os"
+                             "n1 n2 n3 oa"
+                             "oi n0 dc oe";
+    }
+    .calc-scr-display {
+        font-size: 1.4em;
+    }
+}
