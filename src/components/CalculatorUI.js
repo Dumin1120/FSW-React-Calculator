@@ -71,7 +71,7 @@ export default function CalculatorUI({ getUserKey, formSubmit, userKey, display,
                         {formatDisplayWithComma(display)}
                     </div>
                 </div>
-                <button onClick={getUserKey} value="c" id="calc-clr" className="calc-btn mem-btn" tabIndex="-1">{`${allClear ? "AC" : "CE"}`}</button>
+                <button onClick={getUserKey} value="c" id="calc-clr" className="calc-btn mem-btn" tabIndex="-1">{allClear ? "AC" : "CE"}</button>
                 <button onClick={getUserKey} value="d" id="calc-del" className="calc-btn mem-btn" tabIndex="-1">⌫</button>
                 <button onClick={getUserKey} value="=" id="calc-equ" className="calc-btn equ-btn" tabIndex="-1">=</button>
                 <button onClick={getUserKey} value="i" id="calc-inv" className="calc-btn inv-btn" tabIndex="-1">+/-</button>
