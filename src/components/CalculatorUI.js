@@ -19,6 +19,15 @@ export default function CalculatorUI({ getUserKey, formSubmit, userKey, display,
     const showHistory = () => {
         if (userKey === "=") return history
         const convertToMathOperator = (operator) => {
+            /*
+                Another way to write this switch statement is as an object, like so(Not tested, just as an example):
+                let operations = {
+                  "/":"÷",
+                  "*":"×",
+                  "-":"−"
+                }
+                return operations[operator] || "+";
+            */
             switch (operator) {
                 case "/": return "÷"
                 case "*": return "×"
@@ -29,6 +38,8 @@ export default function CalculatorUI({ getUserKey, formSubmit, userKey, display,
         const currMathOpr = convertToMathOperator(currentOpr)
         const storMathOpr = convertToMathOperator(storedOpr)
         const operationArr = []
+        
+        // Great use of a switch statement!
         switch (stage) {
             case 4:
                 operationArr.push(recentNum, currMathOpr, display)
@@ -71,6 +82,24 @@ export default function CalculatorUI({ getUserKey, formSubmit, userKey, display,
                         {formatDisplayWithComma(display)}
                     </div>
                 </div>
+                         {/*
+                            An added challenge would be to dry out this section by storing this an a array, and generating the JSX:
+                            let arr = [
+                                {value:"c", id:"calc-clr", className:"calc-btn mem-btn", content: allClear ? "AC" : "CE"},
+                                {...},
+                                {...}
+                            ];
+                            let newArr = arr.map((obj)=>{
+                                return <button onClick={getUserKey} value={obj.value} ... >{...}</button>
+                            })
+                         */}
+
+                         {/*
+                            I notice that you use ids for css: grid-template-areas. It's uncommon to explicitly specify an id for each element. It effects maintainability of the code.
+                            If I wanted to swap out or add a number or operation on the calculator I will now need to hunt down the CSS id to make this change. There are dynamic solutions that
+                            use the number of items on a row for example that make it easy to maintain.
+                         */}
+
                 <button onClick={getUserKey} value="c" id="calc-clr" className="calc-btn mem-btn" tabIndex="-1">{allClear ? "AC" : "CE"}</button>
                 <button onClick={getUserKey} value="d" id="calc-del" className="calc-btn mem-btn" tabIndex="-1">⌫</button>
                 <button onClick={getUserKey} value="=" id="calc-equ" className="calc-btn equ-btn" tabIndex="-1">=</button>
