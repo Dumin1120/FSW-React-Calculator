@@ -19,6 +19,15 @@ export default function CalculatorUI({ getUserKey, formSubmit, userKey, display,
     const showHistory = () => {
         if (userKey === "=") return history
         const convertToMathOperator = (operator) => {
+            /*
+                Another way to write this switch statement is as an object, like so(Not tested, just as an example):
+                let operations = {
+                  "/":"÷",
+                  "*":"×",
+                  "-":"−"
+                }
+                return operations[operator] || "+";
+            */
             switch (operator) {
                 case "/": return "÷"
                 case "*": return "×"
@@ -29,6 +38,8 @@ export default function CalculatorUI({ getUserKey, formSubmit, userKey, display,
         const currMathOpr = convertToMathOperator(currentOpr)
         const storMathOpr = convertToMathOperator(storedOpr)
         const operationArr = []
+        
+        // Great use of a switch statement!
         switch (stage) {
             case 4:
                 operationArr.push(recentNum, currMathOpr, display)
@@ -71,6 +82,17 @@ export default function CalculatorUI({ getUserKey, formSubmit, userKey, display,
                         {formatDisplayWithComma(display)}
                     </div>
                 </div>
+                         {/*
+                            An added challenge would be to dry out this section by storing this an a array, and generating the JSX:
+                            let arr = [
+                                {value:"c", id:"calc-clr", className:"calc-btn mem-btn", content: allClear ? "AC" : "CE"},
+                                {...},
+                                {...}
+                            ];
+                            let newArr = arr.map((obj)=>{
+                                return <button onClick={getUserKey} value={obj.value} ... >{...}</button>
+                            })
+                         */}
                 <button onClick={getUserKey} value="c" id="calc-clr" className="calc-btn mem-btn" tabIndex="-1">{allClear ? "AC" : "CE"}</button>
                 <button onClick={getUserKey} value="d" id="calc-del" className="calc-btn mem-btn" tabIndex="-1">⌫</button>
                 <button onClick={getUserKey} value="=" id="calc-equ" className="calc-btn equ-btn" tabIndex="-1">=</button>
